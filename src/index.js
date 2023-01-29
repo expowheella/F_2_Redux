@@ -1,58 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
 import './index.css';
-// import App from './App';
-// import Redux from "redux";
+import { createStore, applyMiddleware, compose } from "redux";
+import ReactDOM from 'react-dom';
+import React from 'react';
 
+import ReduxApp from './App-redux';
 import { Provider } from 'react-redux';
 
+// import all reducers as reducer from reducers directory
+import reducer from "./reducers"
+import { logging } from './middleware/logging';
+
+// --- ACTION --> DISPATCHER --> REDUCER --> CHANGE THE STATE OF THE STORE
 
 
-// --------------------------------------------------------------------------
-// создадим store, при этом, createStore() будет изменять содержание store
-
-import {createStore} from "redux"
-
+// STORE ---------------------------------------------------->
 // store is coupled with a reducer 
 // so we pass reducer into createStore() as a parameter
-const store = createStore(myreducer);
-
-
-// const initState = {
-//   todo: [],
-//   posts: []
-// };
-
-// reducer has two parameters:
-// state - the state of the store, which is
-// at the first time equal to an initial state
-// then it will be updated
-// ---
-// we have to dispatch an action into the reducer
-// and then it changes the state. 
-function myreducer(state = [], action) {
-  console.log(action, state)
-  switch (action.type) {
-    // case 'ADD_TODO': 
-    //   return [
-    //     state,
-    //     action.todo
-    //   ];
-    case "WRITE":
-      return [
-        ...state,
-        action.payload
-      ];
-    default:
-      return state
-
-  }
-
-};
+// --------------------------------------------------------------------------
+// создадим store, при этом, createStore() будет изменять содержание store
+const store = createStore(reducer, compose (applyMiddleware(logging),
+window.__REDUX_DEVTOOLS_EXTENSION__&& window.__REDUX_DEVTOOLS_EXTENSION__() ));
 
 
 
 
+
+/*
+
+// SUBSCRIBE --------------------------------------------->
 // Чтобы видеть изменения в store нужно на него подписаться
 store.subscribe(() => {
 
@@ -78,55 +53,40 @@ store.subscribe(() => {
     // append each li-element inside a tag "testUl"
     items.appendChild(li);
   })
-})
-
-
-// --- ACTION --> DISPATCHER --> REDUCER --> CHANGE THE STATE
-// create an action (this action will be passed into
-// myreducer via dispatcher in order to change the state)
-// const todoAction = {
-//   type: 'ADD_TODO',
-//   todo: 'buy milk'
-// };
-
-
-
-// create dispatcher in order to get an action and pass it to reducer
-// store.dispatch(todoAction);
-
-
-
-
-// ----------------------------------------------------------------------
+});
 
 
 
 
 
 
-
-
-// DISPATCHER - CHANGES STORE
-// store.dispatch(changeStore);
-
-
-
-// BUTTON
+// --- ACTION --> DISPATCHER ------------------------------------------> 
 const testButton = document.querySelector(".testButton")
-
 testButton.addEventListener("click",function() {
+  
+  // get value from tag "testInput" after user's input
   const inputValue = document.querySelector(".testInput").value;
 
   console.log("INPUT", inputValue);
   
-  store.dispatch({type: 'WRITE', payload: inputValue}) // ACTION
-})
+  // ACTION ------------------------------------------->
+  // create an action (this action will be passed into
+  // myreducer via dispatcher in order to change the state)
+  const changeStore = {type: 'WRITE', payload: inputValue}
+
+  // DISPATCHER - CHANGES STORE
+  // create dispatcher in order to get an action and pass it to reducer
+  store.dispatch(changeStore) 
+ 
+});
+
+**/
 
 
-
-// ReactDOM.render(
-//   <Provider store={store}>
-//     {/* <App /> */}
-//   </Provider>,
-//   document.getElementById('root')
-// )
+// обернем ReduxApp в спец. компонент Provider, который принимает store в качестве props
+ReactDOM.render(
+  <Provider store={store}>
+    <ReduxApp />
+  </Provider>,
+  document.getElementById('root')
+)
